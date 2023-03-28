@@ -8,9 +8,9 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-    //   address: DataTypes.STRING,
-    //   description: DataTypes.TEXT,
-    //   image: DataTypes.STRING
+    name: {
+      type: Sequelize.STRING
+    },
     address: {
         type: Sequelize.STRING
       },
