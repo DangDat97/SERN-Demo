@@ -7,24 +7,20 @@ let createNewUser = async (data) => {
             let hashUserPasswordFromBcrypt = await hashUserPassword(data.password);
             await db.User.create({
                 email: data.email,
-                password: data.hashUserPasswordFromBcrypt,
+                password: hashUserPasswordFromBcrypt,
                 firstName: data.firstName,
                 lastName: data.lastName,
                 address: data.address,
-                phonenumber: data.phonenumber,
+                phoneNumber: data.phoneNumber,
                 gender: data.gender === '1' ? true : flase,
                 roleId: data.roleId,
             });
-            resolve('ok create a new usrer');
+            resolve(data.phoneNumber);
 
         } catch (e) {
             reject(e);
         }
     })
-    // let hashUserPasswordFromBcrypt = await hashUserPassword(data.password);
-    // console.log('data from service');
-    // console.log(data);
-    // console.log(hashUserPasswordFromBcrypt);
 }
 
 let hashUserPassword = (password) => {
