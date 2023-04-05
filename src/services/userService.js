@@ -1,6 +1,22 @@
 import db from "../models/index";
 import bcrypt, { compare } from 'bcryptjs';
 
+const salt= bcrypt.genSaltSync(10);
+
+let hashUserPassword = (password) => {
+    return new Promise(async (resolve,reject)=>{
+        try {
+            var hash= await bcrypt.hashSync(password, salt);
+            resolve(hash);
+        } catch (e) {
+            reject(e);
+        }
+        
+    })
+}
+
+
+
 let handleUserLogin = (email,password) =>{
     return new Promise(async(resolve,reject)=>{
         try {
@@ -91,7 +107,103 @@ let checkUserEmail = (email) => {
         }
     })
 }
+
+let creteNewUser = (data) =>{
+    return new Promise( async(resolve,reject) => {
+        try {
+            let check = await checkUserEmail(data.email);
+            if(check === true){
+                resolve({
+                    errCode: 1,
+                    message: 'Your email is already in used, Plz Try another email'
+                })
+            }else{
+                let hashUserPasswordFromBcrypt = await hashUserPassword(data.password);
+                await db.User.create({
+                    email: data.email,
+                    password: hashUserPasswordFromBcrypt,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    address: data.address,
+                });
+                resolve({
+                    errCode: 0,
+                    message: 'OK'
+                });
+            }
+            
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+let deleteUser = (id) =>{
+    return new Promise(async(resolve,reject) => {
+        try {
+            let user = await db.User.findOne({
+                where:{id: id}
+            })
+            if(!user){
+                resolve({
+                    errCode: 2,
+                    errMessage: `The user isn't xist`
+                });
+                
+            }else{
+                await db.User.destroy({
+                    where: { id:id}
+                });
+                resolve({
+                    errCode: 0,
+                    errMessage: `The user is deleted`
+                });
+            }
+            
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+
+let updateUser = (data) =>{
+    return new Promise(async(resolve,reject)=>{
+        try {
+            if(!data.id){
+                resolve({
+                    errCode:2,
+                    errMessage: 'Missing requaied'
+                })
+            }
+            let user = await db.User.findOne({
+                where: { id:data.id},
+                raw: false
+            })
+            if(user){
+                user.firstName = data.firstName;
+                user.lastName = data.lastName;
+                user.address = data.address;
+                await user.save();
+                resolve({
+                    errCode: 0,
+                    errMessage: `Update Successdd`
+                });
+            }else{
+                resolve({
+                    errCode: 1,
+                    errMessage: `User does not exist`
+                });
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUser:getAllUser,
+    creteNewUser: creteNewUser,
+    deleteUser: deleteUser,
+    updateUser: updateUser,
 }
